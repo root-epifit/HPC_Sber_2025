@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from copy import copy
 from tqdm import tqdm
 
-import memory_profiler
+from memory_profiler import profile
 
 c = 1.5
 cc = 2.1
