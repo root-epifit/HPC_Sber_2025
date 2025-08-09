@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from copy import copy
 from tqdm import tqdm
 
+import memory_profiler
+
 c = 1.5
 cc = 2.1
 dd = 1.
@@ -12,6 +14,7 @@ d = 0.1
 N = 12871
 x_max = 128.0*np.pi
 
+@profile
 def generate_domains():
     if N%2 == 0:
         print("please make N an odd number")
@@ -26,11 +29,13 @@ def generate_domains():
     print("k_min: ", f_domain[len(f_domain)//2+1])
     return x, omega
 
+@profile
 def initial_conditions(shape):
     A = np.ones(shape, dtype=np.complex128)
     A.imag = 0.
     return A
 
+@profile
 def add_perturb_1D(A, a, k, func, real, x):
     res = copy(A)
     if real:
@@ -39,9 +44,11 @@ def add_perturb_1D(A, a, k, func, real, x):
         res.imag += a*func(k*x)
     return res
 
+@profile
 def add_noize(A):
     return A + 0.1*np.random.rand(*A.shape)
 
+@profile
 def non_linear_step(A, m, q, Om, i, dt):
     temp = np.empty(A.shape, dtype = float)
     potential = np.zeros(A.shape, dtype = float)
@@ -52,6 +59,7 @@ def non_linear_step(A, m, q, Om, i, dt):
     temp = np.exp(((1. - np.abs(A)**2)*gamma + 4.j*potential) * dt)
     return A*temp
 
+@profile
 def computation_loop(A, i, m, q, Om, multiplier, dt):
     fft_func = np.fft.fft if len(m)==1 else np.fft.fft2
     ifft_func = np.fft.ifft if len(m)==1 else np.fft.ifft2
@@ -63,6 +71,7 @@ def computation_loop(A, i, m, q, Om, multiplier, dt):
     A = A*multiplier
     return ifft_func(A)
 
+@profile
 def iterations(A, num, m, q, Om, a = 0, k = 0, func = 0, real = 0):
     dt = 0.1
     period = int(2*np.pi/Om/dt)
@@ -92,6 +101,7 @@ def iterations(A, num, m, q, Om, a = 0, k = 0, func = 0, real = 0):
 
     return A, total_solution, l_array
 
+@profile
 def plot_1D_heatmap(heatmap_1D):
     plt.figure(figsize=(6,5))
     plt.imshow(np.abs(heatmap_1D[:,1000:1000+heatmap_1D.shape[1]//16]),
